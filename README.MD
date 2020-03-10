@@ -26,3 +26,13 @@ nuke :setup
 ```
 Simply accept the defaults (this repo uses `/src` as sources folder). 
 
+## Create a library project
+
+```
+dotnet new classlib --output src/SimpleApi --name SimpleApi
+```
+
+Add project to the solution: 
+```
+dotnet sln .\learn-nuke-build.sln add .\src\SimpleApi\SimpleApi.csproj
+```
