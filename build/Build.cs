@@ -1,17 +1,13 @@
-using System;
-using System.Linq;
 using Nuke.Common;
 using Nuke.Common.Execution;
 using Nuke.Common.Git;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
-using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.GitVersion;
 using Nuke.Common.Utilities.Collections;
-using static Nuke.Common.EnvironmentInfo;
+using static Nuke.Common.ChangeLog.ChangelogTasks;
 using static Nuke.Common.IO.FileSystemTasks;
-using static Nuke.Common.IO.PathConstruction;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 [CheckBuildProjectConfigurations]
@@ -66,4 +62,20 @@ class Build : NukeBuild
                 .EnableNoRestore());
         });
 
+    string ChangelogFile => RootDirectory / "CHANGELOG.md"; 
+    Target Pack => _ => _
+        .DependsOn(Compile)
+        .Executes(() =>
+        {
+            DotNetPack(s => s
+                .SetProject(Solution)
+                .SetVersion(GitVersion.NuGetVersionV2)
+                .SetPackageReleaseNotes(GetNuGetReleaseNotes(ChangelogFile,GitRepository))
+                .SetOutputDirectory(OutputDirectory)
+                .SetConfiguration(Configuration)
+                .EnableNoBuild()
+                .EnableIncludeSymbols()
+                .SetSymbolPackageFormat(DotNetSymbolPackageFormat.snupkg)
+            );
+        });
 }

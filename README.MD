@@ -201,3 +201,38 @@ is automatically set to `Release`, but what if we want to run `Release` locally?
 ```powershell
 nuke --configuration Release
 ```
+
+## Package the library
+
+To package the library we need to add a target to the build file.
+
+```
+// Build.cs
+    string ChangelogFile => RootDirectory / "CHANGELOG.md"; 
+    Target Pack => _ => _
+        .DependsOn(Compile)
+        .Executes(() =>
+        {
+            DotNetPack(s => s
+                .SetProject(Solution)
+                .SetVersion(GitVersion.NuGetVersionV2)
+                .SetPackageReleaseNotes(GetNuGetReleaseNotes(ChangelogFile,GitRepository))
+                .SetOutputDirectory(OutputDirectory)
+                .SetConfiguration(Configuration)
+                .EnableNoBuild()
+                .EnableIncludeSymbols()
+                .SetSymbolPackageFormat(DotNetSymbolPackageFormat.snupkg)
+            );
+        });
+```
+This will create a nuget pkg with a `Gitversion` number in the `Outputdirectory`.
+```
+tree /F .\output 
+``` 
+Outputs: 
+```
+~\SRC\GITHUB.COM\TKVW\LEARN-NUKE-BUILD\OUTPUT
+    SimpleApi.0.1.0-package-library-0001.nupkg
+    SimpleApi.0.1.0-package-library-0001.snupkg
+```
+
